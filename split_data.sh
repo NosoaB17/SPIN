@@ -2,10 +2,6 @@
 # image_postfix = "_sat.jpg"
 # gt_postfix = "_mask.png"
 
-# Spacenet
-# image_postfix = ".png"
-# gt_postfix = ".png"
-
 full_train_dir=$1
 base_dir=$2
 image_postfix=$3
