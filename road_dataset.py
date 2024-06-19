@@ -222,59 +222,6 @@ class RoadDataset(data.Dataset):
         return image, gt
 
 
-class SpacenetDataset(RoadDataset):
-    def __init__(self, config, seed=7, multi_scale_pred=True, is_train=True):
-        super(SpacenetDataset, self).__init__(
-            config, "spacenet", seed, multi_scale_pred, is_train
-        )
-
-        # preprocess
-        self.threshold = self.config["thresh"]
-        print("Threshold is set to {} for {}".format(self.threshold, self.split))
-
-    def __getitem__(self, index):
-
-        image, gt = self.getRoadData(index)
-        c, h, w = image.shape
-
-        labels = []
-        vecmap_angles = []
-        if self.multi_scale_pred:
-            smoothness = [1, 2, 4]
-            scale = [4, 2, 1]
-        else:
-            smoothness = [4]
-            scale = [1]
-
-        for i, val in enumerate(scale):
-            if val != 1:
-                gt_ = cv2.resize(
-                    gt,
-                    (int(math.ceil(h / (val * 1.0))), int(math.ceil(w / (val * 1.0)))),
-                    interpolation=cv2.INTER_NEAREST,
-                )
-            else:
-                gt_ = gt
-
-            gt_orig = np.copy(gt_)
-            gt_orig /= 255.0
-            gt_orig[gt_orig < self.threshold] = 0
-            gt_orig[gt_orig >= self.threshold] = 1
-            labels.append(gt_orig)
-
-            keypoints = affinity_utils.getKeypoints(
-                gt_, thresh=0.98, smooth_dist=smoothness[i]
-            )
-            vecmap_angle = self.getOrientationGT(
-                keypoints,
-                height=int(math.ceil(h / (val * 1.0))),
-                width=int(math.ceil(w / (val * 1.0))),
-            )
-            vecmap_angles.append(vecmap_angle)
-
-        return image, labels, vecmap_angles
-
-
 class DeepGlobeDataset(RoadDataset):
     def __init__(self, config, seed=7, multi_scale_pred=True, is_train=True):
         super(DeepGlobeDataset, self).__init__(
@@ -323,30 +270,6 @@ class DeepGlobeDataset(RoadDataset):
             vecmap_angles.append(vecmap_angle)
 
         return image, labels, vecmap_angles
-
-
-class SpacenetDatasetCorrupt(RoadDataset):
-    def __init__(self, config, seed=7, is_train=True):
-        super(SpacenetDatasetCorrupt, self).__init__(
-            config, "spacenet", seed, multi_scale_pred=False, is_train=is_train
-        )
-
-        # preprocess
-        self.threshold = self.config["thresh"]
-        print("Threshold is set to {} for {}".format(self.threshold, self.split))
-
-    def __getitem__(self, index):
-
-        image, gt = self.getRoadData(index)
-        c, h, w = image.shape
-        gt /= 255.0
-        gt[gt < self.threshold] = 0
-        gt[gt >= self.threshold] = 1
-
-        erased_gt = self.getCorruptRoad(gt.copy(), h, w)
-        erased_gt = torch.from_numpy(erased_gt)
-
-        return image, [gt], [erased_gt]
 
 
 class DeepGlobeDatasetCorrupt(RoadDataset):
