@@ -12,7 +12,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data as data
 from model.models import MODELS
-from road_dataset import DeepGlobeDataset, SpacenetDataset
+from road_dataset import DeepGlobeDataset
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import MultiStepLR
 from utils.loss import CrossEntropyLoss2d, mIoULoss
@@ -22,7 +22,7 @@ from utils import viz_util
 #from hanging_threads import start_monitoring
 #start_monitoring(seconds_frozen=300, test_interval=100)
 
-__dataset__ = {"spacenet": SpacenetDataset, "deepglobe": DeepGlobeDataset}
+__dataset__ = {"deepglobe": DeepGlobeDataset}
 
 
 parser = argparse.ArgumentParser()
